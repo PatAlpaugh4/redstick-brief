@@ -1,0 +1,9 @@
+{
+  "name": "redstick-brief",
+  "version": "0.1.0",
+  "description": "Redstick Ventures pre-meeting brief generator. /brief reads today's calendar, pulls Gmail thread history with each attendee, and produces a one-page sharp briefing for Cam.",
+  "author": {
+    "name": "Patrick Alpaugh"
+  },
+  "keywords": ["venture-capital", "redstick", "calendar", "meeting-brief", "prep", "daily-brief"]
+}

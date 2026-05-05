@@ -1,0 +1,8 @@
+.DS_Store
+*.plugin
+.env
+.env.*
+node_modules/
+
+# Internal-only: ship email draft contains Cam's address and pre-send copy
+SHIP-EMAIL.md
