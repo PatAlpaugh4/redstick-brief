@@ -1,6 +1,6 @@
 # Synthesis Prompt — Redstick Pre-Meeting Brief
 
-This prompt is the canonical synthesis instruction for Cam's pre-meeting brief. It is read by the `meeting-brief` skill in the Cowork plugin AND fetched at runtime by the n8n daily-email workflow. **Edit it once; both targets pick up the change.**
+This prompt is the canonical synthesis instruction for Cam's pre-meeting brief. It is read by the `meeting-brief` skill in the Cowork plugin AND by the scheduled cloud routine that emails Cam at 6 AM weekdays (the routine clones this repo on every run). **Edit it once; both targets pick up the change.**
 
 ---
 

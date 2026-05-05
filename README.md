@@ -6,7 +6,7 @@ A pre-meeting brief generator for Cam at Redstick Ventures. One slash command, o
 
 **`/brief`** in Cowork → reads today's Google Calendar, pulls 60 days of Gmail thread history with each external attendee (30 days for internal), runs a quick web search for "what's new" on external attendees, and writes a one-page brief inline. Optional argument: `/brief next`, `/brief tomorrow`, `/brief "Sarah"`.
 
-**Daily email at 6:00 AM weekdays** (via the n8n workflow in `n8n/`) → same logic, delivered to `cam@redstickvc.com` so Cam wakes up to the brief without asking.
+**Daily email at 6:00 AM weekdays** (via a scheduled cloud routine — see [routines/cam.md](routines/cam.md)) → same logic, delivered to `cam@redstickvc.com` so Cam wakes up to the brief without asking.
 
 ## What's in a brief
 
@@ -63,18 +63,19 @@ Empty days don't get an email. No-attendee focus blocks are skipped. Internal-on
 - `/brief "Sarah Chen"` — single named attendee
 - Natural-language phrases: "brief me on today", "prep me for my meetings", "what's on my calendar"
 
-**Daily (workflow):**
+**Daily (cloud routine):**
 - Email arrives at 6:00 AM Mon–Fri in Cam's local TZ.
 - Subject: `Tuesday, May 5 — 4 meetings`.
 - One-page markdown body.
+- Runs as a scheduled remote agent on Cam's Anthropic account. Setup details: [routines/cam.md](routines/cam.md).
 
 ## Data sources
 
 - **Google Calendar** — today's events, attendees, locations
 - **Gmail** — last 60 days of threads with each external attendee, last 30 days for internal
-- **WebSearch** (skill) / **Perplexity API** (workflow) — recent public activity, company news, team changes, anomalies
+- **WebSearch** — recent public activity, company news, team changes, anomalies (last 14 days)
 
-All connectors must be authenticated in Cam's Cowork for the skill. The n8n workflow uses Cam's authorized Google account + a separate Perplexity API key.
+Both Google connectors must be attached: in Cam's Cowork (for `/brief` skill) and on the routine itself at https://claude.ai/code/routines (for the daily email). Connect at https://claude.ai/customize/connectors.
 
 ## Components
 
@@ -92,8 +93,8 @@ skills/
       internal-block-template.md
       voice-rules.md
       example-output.md
-n8n/                  ← daily 6 AM email workflow (NOT shipped in the .plugin)
-  redstick-brief-daily.json
+routines/             ← scheduled cloud routine prompts (NOT shipped in the .plugin)
+  cam.md              ← production prompt + setup config
   README.md
 ```
 
@@ -107,7 +108,7 @@ Patrick Alpaugh — built for Cam at Redstick Ventures.
 
 ## Version
 
-**0.1.0** — Initial release. Skill (`/brief`) + n8n daily-email workflow. Calendar + Gmail + WebSearch/Perplexity for external "WHAT'S NEW."
+**0.1.0** — Initial release. Skill (`/brief`) + scheduled cloud routine for the daily 6 AM email. Calendar + Gmail + WebSearch for external "WHAT'S NEW."
 
 ### Roadmap
 
