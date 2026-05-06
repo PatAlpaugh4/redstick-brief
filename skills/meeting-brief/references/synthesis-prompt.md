@@ -28,14 +28,21 @@ A JSON-like bundle:
     { "thread_subject": "...", "last_message_date": "2026-04-29", "last_message_snippet": "..." },
     ...
   ],
-  "priorCallContext": [       // from Notion `Meeting Notes` DB, populated by Otter→Zapier
+  "priorCallContext": [       // from Otter conversation-summary emails matched by participant overlap
     { "date": "2026-04-29", "summary": "...", "action_items": "...", "otter_url": "..." },
     ...
   ],
-  "researchContext": [        // external only
-    { "url": "...", "title": "...", "date": "2026-05-03", "snippet": "..." },
-    ...
-  ],
+  "researchContext": {        // external only — produced by the 4-stage research pipeline
+    "stage1_anchor": [ { "url": "...", "snippet": "..." }, ... ],
+    "stage2_pages": [ { "url": "<company>/team", "current_team": [...], "fetch_date": "..." }, ... ],
+    "stage3_recency": [ { "url": "...", "title": "...", "date": "...", "snippet": "..." }, ... ],
+    "stage4_anomalies": [
+      { "source": "wayback", "diff": "Co-founder Marcus Lee removed from /team since 2026-04-15", "url": "..." },
+      { "source": "github", "snippet": "main branch silent for 18 days", "url": "..." },
+      { "source": "hacker_news", "snippet": "...", "url": "..." },
+      { "source": "jobs", "snippet": "VP Sales reposted 3rd time in 60 days", "url": "..." }
+    ]
+  },
   "scorecardContext": null | { "verdict": "WORTH A MEETING", "confidence": "LOW", "ev_multiple": 1.06 }
 }
 ```
@@ -79,6 +86,17 @@ When only one source has it, cite that one. When the email and call genuinely co
 6. **Cut, don't pad.** Empty sections get deleted. A 4-line block beats a 12-line block of filler.
 7. **Always end on action.** The FIRST MOVE line is the difference between "informed" and "ready." Make it concrete and speakable.
 
+### Research-signal ranking (for WHAT'S NEW)
+
+`researchContext` arrives in 4 buckets. Rank them this way when choosing what to surface in WHAT'S NEW:
+
+1. **Stage-4 anomalies first** — Wayback diffs (removed co-founder, deleted page), GitHub velocity changes, repeated job postings, founder-named HN/Reddit threads. These are rare, decision-relevant, and the kind of thing a peer GP wouldn't have caught.
+2. **Stage-3 recency hits second** — funding announcements, recent press, podcast appearances. Quote the sharpest line if it's a podcast.
+3. **Stage-2 page-fetch findings third** — surface only when the comparison reveals something (departure, new team member, product pivot signaled by hero copy).
+4. **Stage-1 anchor results last** — usually background, only for ORIENT, not WHAT'S NEW.
+
+A single sharp Stage-4 finding beats five Stage-3 press hits. If the brief leads with "Bayfield led a $4M seed last week" when there's also "Co-founder Marcus removed from /team page 5 days ago" — the prioritization is wrong.
+
 ## Special handling
 
 - **Scorecard context exists**: surface the snap verdict + confidence in ORIENT (one phrase, e.g., "Scorecard verdict: WORTH A MEETING, low confidence *(scorecard 4/30)*"). Do not re-litigate the math.
@@ -86,7 +104,7 @@ When only one source has it, cite that one. When the email and call genuinely co
 - **No Gmail history AND no prior call**: ORIENT relies on research context only; WHERE YOU LEFT OFF gets cut entirely (it's a first-touch meeting).
 - **No research signal**: WHAT'S NEW gets cut. Do not pad.
 - **Internal meeting with no recent threads or calls**: LAST TIME and OPEN BETWEEN YOU collapse to a one-line block — "no recent threads since [date]; usual cadence." That's still useful.
-- **Notion MCP offline / priorCallContext missing entirely**: behave as v0.1 did — Gmail + WebSearch only. Don't mention "call notes unavailable" in the brief itself; that's noise. The skill or routine wrapper handles the offline notice separately.
+- **No Otter conversation-summary emails found / priorCallContext empty**: brief gracefully degrades to email-only context. Don't mention "call notes unavailable" in the brief itself; that's noise. (Cam may not have toggled Otter's email-summary setting yet, or the meeting just didn't have a recorded prior call.)
 
 ## What NOT to do
 

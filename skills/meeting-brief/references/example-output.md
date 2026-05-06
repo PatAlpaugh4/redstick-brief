@@ -18,19 +18,20 @@ WHERE YOU LEFT OFF
 On Tuesday's call she dodged CAC and gross margin per pound — said the unit econ model "is being cleaned up, end of week" *(per Tuesday's call)*. Followed up with an email Wednesday saying she'd "send a model this week" *(per Wed email)*. Today is Friday, no model.
 
 WHAT'S NEW (last 14 days)
+- Co-founder Marcus Lee removed from greenhouserobotics.com/team page sometime in the last 10 days *(Wayback diff: present 4/16, gone 4/26)*. No announcement anywhere. Biggest item on this list.
 - Pilot with Bowery announced on her LinkedIn 2 days ago — no press, but Bowery's CTO commented publicly *(LinkedIn 4/27)*. Real.
-- Lead engineer's title flipped from "founding eng" to "advisor" 4 days ago *(LinkedIn 4/25)*. No replacement announced.
-- AgFunder published a piece on indoor-farming CV last week mentioning three competitors but not Greenhouse *(AgFunder 4/22)*. Possible positioning gap.
+- AgFunder published a piece on indoor-farming CV last week naming three competitors, not Greenhouse *(AgFunder 4/22)*. Possible positioning gap.
+- VP Sales role reposted 3rd time in 60 days *(LinkedIn jobs 4/28)* — no commercial leadership has stuck.
 
 FIRST MOVE
-"Saw the Bowery pilot — congrats. Walk me through how that came together."
-(Validates the pilot is real before anything else, opens the door to the engineer question without making it accusatory.)
+"Saw the Bowery pilot — congrats. Walk me through how the team's looking these days."
+(Validates the pilot is real, opens the door to the Marcus question via "the team" without making it accusatory.)
 
 THE ANGLE
-Bowery pilot first, engineer transition second, unit econ third. If the engineer is actually leaving, the technical case shifts and you don't need to do unit econ today.
+Bowery pilot first, then the team question — the Marcus removal is a big deal and you need to know whether it's a quiet exit, a title change, or something worse. Unit econ third only if there's time.
 
 ONE THING
-She's the only ex-Plenty person raising in your thesis right now. That's leverage on terms.
+The Marcus departure isn't on LinkedIn yet *(checked 4/29)*. Either she's about to announce, or she's hoping no one notices.
 
 ---
 
@@ -82,8 +83,9 @@ WHERE YOU LEFT OFF
 Sarah introduced you over email last Wednesday *(per intro email 4/23)*. Jen replied within an hour, suggested this slot herself — not your push.
 
 WHAT'S NEW (last 14 days)
+- Jen spoke on a panel about "patient capital in food" 9 days ago *(podcast 4/20)* — sharpest line: "we don't need 10x in five years; we need real." Worth quoting back to her.
 - Bayfield led a $4M seed in a precision-fermentation startup last week *(TechCrunch 4/24)* — first food-tech check this year. Suggests they're warming.
-- Jen spoke on a panel about "patient capital in food" 9 days ago *(podcast 4/20)* — sharpest line: "we don't need 10x in five years; we need real."
+- Their /team page added a "Director of Sustainability" role 6 days ago *(Wayback 4/23 diff)* — likely a thesis pillar she'll bring up.
 
 FIRST MOVE
 "Heard your panel — the 'we don't need 10x in five' line stuck. How does that show up in your portfolio construction?"
@@ -102,7 +104,8 @@ Her panel framing aligns with how you actually run Fund I (real businesses, not 
 - **Total length**: ~75 lines. One-page-ish. A 5-meeting day would tighten WHAT'S NEW bullets and ORIENT to fit.
 - **Citations**: every factual claim has one. None are invented.
 - **FIRST MOVE quality**: each is specific to the meeting, references something recent and citeable, gives Cam a way to start without fishing.
-- **Anomalies surfaced**: engineer title flip, Saturday-11-min reply, AgFunder positioning gap, Jen suggesting the slot herself.
+- **Stage-4 anomaly findings lead WHAT'S NEW**: Greenhouse's removed-co-founder via Wayback diff, Bayfield's new role via Wayback diff, repeated VP Sales posting via job-board search — these are signals a single WebSearch wouldn't surface. They're cited with `*(Wayback diff: ...)*` and `*(LinkedIn jobs ...)*` so the source is auditable.
+- **Podcast quote in WHAT'S NEW**: Jen's panel line is exactly the kind of "sharpest quote" the FIRST MOVE can echo — citing the source date keeps it credible.
 - **Call beats email**: in Greenhouse's WHERE YOU LEFT OFF, the call cite (`*(per Tuesday's call)*`) anchors the verbal commitment about unit econ; the email cite (`*(per Wed email)*`) anchors the follow-up promise. Reader can see exactly what was said vs. what was written. In Marcus's LAST TIME, action items are tied to the prior call (`*(per call 4/22)*`) so the recap reads from the truer source.
 - **Internal block (Marcus)** is lighter than external; no FIRST MOVE; no WHAT'S NEW.
 - **No diligence jargon**: nowhere does "MOIC" or "EV" or "Stage 2" appear. The scorecard reference in Greenhouse's ORIENT uses the snap verdict in plain English, not the math.

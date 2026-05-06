@@ -11,9 +11,9 @@ This is the prompt to paste into a Claude **scheduled cloud routine** (claude.ai
 | Timezone | UTC (cron is always UTC; convert from America/Chicago) |
 | Model | `claude-sonnet-4-6` (default; Opus 4.7 if voice quality needs more) |
 | Source | `https://github.com/PatAlpaugh4/redstick-brief` |
-| Allowed tools | `Read`, `Glob`, `Grep`, `WebSearch` |
-| MCP connectors | Gmail + Google Calendar + Notion (all three must be connected at https://claude.ai/customize/connectors) |
-| Enabled | `true` once all three connectors are attached |
+| Allowed tools | `Read`, `Glob`, `Grep`, `WebSearch`, `WebFetch` |
+| MCP connectors | Gmail + Google Calendar (both must be connected at https://claude.ai/customize/connectors) |
+| Enabled | `true` once both connectors are attached |
 
 ## Prompt (paste verbatim)
 
@@ -24,9 +24,11 @@ You are running in a fresh remote Claude Code session with the redstick-brief pl
 
 ## Required MCP connectors
 
-- **Gmail** (must be attached) — used for both reading thread context AND sending the brief email.
+- **Gmail** (must be attached) — used for thread history, Otter conversation-summary lookups, AND sending the brief email.
 - **Google Calendar** (must be attached) — required to read today's events. **If Calendar MCP is not attached to this routine, STOP immediately and report: "Calendar MCP not connected. Connect it at https://claude.ai/customize/connectors and update this routine to attach it." Do NOT send an email and do NOT attempt the brief without it.**
-- **Notion** (recommended; gracefully degrades) — required to read prior-call notes from the `Meeting Notes` database that Otter populates via Zapier. If Notion MCP is missing, the routine continues with Gmail + WebSearch only (matches v0.1 behavior); add a one-line note to the email footer: `[note: Notion call-notes source not connected]`. Do NOT block on Notion absence.
+
+Optional but recommended setup (no MCP, just an Otter setting):
+- **Otter "Email me conversation summaries" toggle** — when on, Otter emails Cam after every call he records. The brief picks these up via the Gmail search below as the prior-call context source. If off, brief degrades gracefully to email-only context — no error, just less call-aware.
 
 ## Steps
 
@@ -54,14 +56,19 @@ You are running in a fresh remote Claude Code session with the redstick-brief pl
 6. **Per meeting, in parallel:**
    - **External:**
      - Gmail search threads with each external attendee over last 60 days; Gmail get_thread on top 5 threads per attendee.
-     - Notion query the `Meeting Notes` database for entries where any attendee name overlaps current meeting attendees AND `Date` is within last 90 days. Sort by Date desc; take the most recent 1–2. Read `Summary` + `Action Items`. (Skip if Notion MCP not attached.)
-     - WebSearch each external attendee for what's new in last 14 days (LinkedIn posts, company news, recent press, podcasts, anomalies — see synthesis-prompt.md for the query template).
+     - Gmail search for Otter conversation summaries: `(from:noreply@otter.ai OR subject:"Conversation summary" OR subject:"Otter") after:<90 days ago>`. For each match, parse the body for participants and match by name overlap to current meeting attendees. Take the most recent 1–2. Read summary + action items. (Cite as `*(per Tuesday's call)*` or `*(call 4/29)*` rather than as email citations.)
+     - **4-stage research pipeline** for each external attendee (run stages in parallel where independent):
+       - **Stage 1 — Anchor**: WebSearch `"<person>" "<company>"` to find LinkedIn URL, company site, recent press
+       - **Stage 2 — Direct page fetch**: WebFetch the company's `/team`, `/about`, `/blog` pages → current titles + most-recent-post date. Compare to old Gmail thread names to detect departures.
+       - **Stage 3 — Targeted recency**: parallel WebSearch queries — `site:linkedin.com/in "<person>"`, `"<company>" site:techcrunch.com OR site:agfunder.com OR site:venturebeat.com` past 30 days, `"<company>" site:prnewswire.com OR site:businesswire.com`, `"<person>" podcast OR interview` past 90 days
+       - **Stage 4 — Long-tail anomalies**: **Wayback Machine** (`web.archive.org/web/2*/<company-url>` then WebFetch + diff against live page — single highest-leverage anomaly source), **GitHub** for technical founders (`site:github.com "<company>"`), **Hacker News + Reddit** (`site:news.ycombinator.com OR site:reddit.com "<company>"`), **Job postings** (`"<company>" jobs OR careers` for repeated postings = churn signals)
+       - Stage-4 findings rank above Stage-3 in WHAT'S NEW because they're rarer and more decision-relevant.
    - **Internal:**
      - Gmail search threads with internal attendees over last 30 days.
-     - Notion query the `Meeting Notes` database same way, last 30 days. (Skip if Notion MCP not attached.)
-     - No web search.
+     - Gmail search for Otter conversation summaries the same way as external, 30-day window.
+     - No web research.
 
-7. **Synthesize each block** per `synthesis-prompt.md` and the templates. Cite every claim inline like `*(per Tuesday email)*`, `*(per Tuesday's call)*`, `*(call 4/29)*`, `*(LinkedIn 5/3)*`. **Source priority: call beats email** — when the same fact is in both Notion call notes and a Gmail thread, quote the call. Empty sections get cut, never padded. Each external block ends with a literal FIRST MOVE line.
+7. **Synthesize each block** per `synthesis-prompt.md` and the templates. Cite every claim inline like `*(per Tuesday email)*`, `*(per Tuesday's call)*`, `*(call 4/29)*`, `*(LinkedIn 5/3)*`, `*(Wayback diff: ...)*`, `*(GitHub commits 5/2)*`. **Source priority: call beats email** — when the same fact is in both an Otter call summary and a Gmail thread, quote the call. **Stage-4 anomaly findings beat Stage-3 press hits** — lead WHAT'S NEW with the rarer, sharper item. Empty sections get cut, never padded. Each external block ends with a literal FIRST MOVE line.
 
 8. **Compose the email:**
    - **To:** `cam@redstickvc.com`

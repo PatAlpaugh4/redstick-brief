@@ -1,6 +1,6 @@
 ---
 name: meeting-brief
-description: Produces a sharp one-page pre-meeting brief for Cam at Redstick Ventures Fund I. Reads today's Google Calendar, fetches 60 days of Gmail thread history with each external attendee (30 days for internal), queries Notion's `Meeting Notes` database for prior-call summaries from Otter (last 90 days external, 30 days internal), runs WebSearch on each external attendee for "what's new in the last 14 days," classifies meetings as external (≥1 non-@redstickvc.com) or internal, then synthesizes per-meeting blocks in the v1 spec format (ORIENT / WHERE YOU LEFT OFF / WHAT'S NEW / FIRST MOVE / THE ANGLE / ONE THING for external; LAST TIME / OPEN BETWEEN YOU / ONE THING for internal). Use when the user says "brief me", "brief me on today", "brief me on my meetings", "what's on my calendar", "prep me for my meetings", "meeting brief", "what do I need to know for today", or any natural variation. Also triggers on `/brief` slash command.
+description: Produces a sharp one-page pre-meeting brief for Cam at Redstick Ventures Fund I. Reads today's Google Calendar, fetches 60 days of Gmail thread history with each external attendee (30 days for internal), runs a parallel Gmail search for Otter's auto-emailed conversation summaries (last 90 days) to surface what was actually said on prior calls, executes a 4-stage WebSearch+WebFetch research pipeline on each external attendee (anchor search → direct page fetch → targeted recency searches → long-tail anomaly sources like Wayback Machine, GitHub, Hacker News, job postings), classifies meetings as external (≥1 non-@redstickvc.com) or internal, then synthesizes per-meeting blocks in the v1 spec format (ORIENT / WHERE YOU LEFT OFF / WHAT'S NEW / FIRST MOVE / THE ANGLE / ONE THING for external; LAST TIME / OPEN BETWEEN YOU / ONE THING for internal). Use when the user says "brief me", "brief me on today", "brief me on my meetings", "what's on my calendar", "prep me for my meetings", "meeting brief", "what do I need to know for today", or any natural variation. Also triggers on `/brief` slash command.
 ---
 
 # Meeting Brief Skill
@@ -53,15 +53,38 @@ In parallel, for each external event:
 
 1. **Pull Gmail thread history** for the external attendees over the last 60 days. Use `mcp__claude_ai_Gmail__search_threads` with a query like `from:<email> OR to:<email>` plus a date filter. Pull the top 5–10 threads. Use `mcp__claude_ai_Gmail__get_thread` to read the most recent 1–2 messages of each.
 
-2. **Query Notion `Meeting Notes` database** via Notion MCP for prior calls with these attendees, last 90 days. Filter by `Attendees` field overlap (any attendee name match) AND `Date` ≥ today − 90 days. Sort by `Date` descending; take the most recent 1–2 entries.
-   - Read the `Summary` and `Action Items` properties of each match.
-   - Skip the full `Transcript` field unless `Summary` is empty.
-   - This is fed by the Otter→Zapier→Notion pipeline Cam has set up — every Otter call ends up as a row in this DB. **If Notion MCP is not attached, skip this step gracefully** (don't error) and note in the brief output that the call-notes source is offline.
+2. **Pull Otter conversation summaries** from Gmail (this is where prior-call notes live). Otter auto-emails Cam a "Conversation summary" after every call he records. Run a parallel Gmail search:
+   ```
+   (from:noreply@otter.ai OR subject:"Conversation summary" OR subject:"Otter") after:<90 days ago>
+   ```
+   For each candidate summary email, parse the body for the participants list (Otter formats it as a "Participants:" or "Attendees:" line, plus inline names). Match to today's meeting attendees by name overlap. Take the most recent 1–2 matching summaries. Read the AI summary + action items + any inline meeting URL.
+   - **If no matches**, the WHERE YOU LEFT OFF section uses email context only. That's fine — graceful degradation. Don't note "no calls found" in the brief output; that's noise.
+   - Cite these as `*(per Tuesday's call)*` or `*(call 4/29)*` rather than as email citations.
 
-3. **Run WebSearch** on each external attendee with a query in the spirit of:
-   > Recent activity by [PERSON_NAME], [TITLE] at [COMPANY_NAME]: posts, podcasts, interviews, fundraising, hires, departures, product launches, customer wins, anomalies. Last 14 days.
+3. **Run the 4-stage research pipeline** for each external attendee. Stages run in parallel where independent. Goal: surface anomaly signals a single WebSearch wouldn't catch.
+
+   **Stage 1 — Anchor search.** WebSearch `"<person>" "<company>"` to find their LinkedIn URL, the company website, and recent press hits (3–5 candidate URLs).
+
+   **Stage 2 — Direct page fetch.** Use WebFetch on:
+   - The company's `/team` or `/about` page → captures current titles + roster
+   - The company's `/blog` or `/news` page → most-recent-post date + topic
    
-   Capture URLs and dates for citation. If a result has no date or appears stale (>30 days), drop it. Prefer LinkedIn posts, company blog posts, AgFunder / TechCrunch / industry-specific press, and the company's own site.
+   Compare the team-page roster to names referenced in old Gmail threads. Departures = cite-worthy anomalies.
+
+   **Stage 3 — Targeted recency searches** (run in parallel):
+   - `site:linkedin.com/in "<person>"` — pin the right LinkedIn (disambiguates common names)
+   - `"<company>" site:techcrunch.com OR site:agfunder.com OR site:venturebeat.com` past 30 days — funding, partnerships, exits
+   - `"<company>" site:prnewswire.com OR site:businesswire.com` — formal announcements
+   - `"<person>" podcast OR interview` past 90 days — surfaces sharp lines for quoting
+   - `"<company>" "<person>"` past 14 days — catch-all recency
+
+   **Stage 4 — Long-tail anomaly sources.** These are what make briefs feel sharp:
+   - **Wayback Machine** — WebFetch `https://web.archive.org/web/2*/[<company-url>]` and compare to the live page. Removed co-founders, deleted product pages, changed hero copy = high-signal anomalies. **This is the single highest-leverage source — always run it for important meetings.**
+   - **GitHub** — for technical founders, WebSearch `site:github.com "<company>" OR "<person>"` + WebFetch their public commits page. Velocity = product signal.
+   - **Hacker News + Reddit** — `site:news.ycombinator.com OR site:reddit.com "<company>"` for unfiltered customer/competitor talk
+   - **Job postings** — WebSearch `"<company>" jobs OR careers` for repeated postings (churn signal) or new senior roles (strategic shifts)
+
+   **Capture URLs + dates** for every claim. If a result has no clear date or appears >30 days stale (and isn't from Wayback), drop it. Stage-4 findings rank above Stage-3 in WHAT'S NEW because they're rarer and more decision-relevant.
 
 4. **Look for a deal scorecard** in `Redstick Hub/Deals/<company>/Scorecard.md` (if accessible from the workspace). If one exists, read just the TL;DR snap verdict and EV multiple — surface in the ORIENT block. Do NOT re-run scorecard math.
 
@@ -70,10 +93,10 @@ In parallel, for each external event:
 In parallel, for each internal event:
 
 1. **Pull Gmail thread history** for the internal attendees over the last 30 days. Same tool, narrower window.
-2. **Query Notion `Meeting Notes` database** via Notion MCP for prior 1:1s/internal calls with these attendees, last 30 days. Same filter pattern as external, narrower window. Read `Summary` + `Action Items`. Skip if Notion MCP missing.
+2. **Pull Otter conversation summaries** the same way as for external (Step 4a.2), but with a 30-day window. Match by participant name overlap.
 3. **Look for recent shared calendar events** (last 30 days) with the same attendees. Note any open commitments (sections promised, references pending, etc.) that surface in those threads.
 
-No web search for internal meetings.
+No web research for internal meetings.
 
 ### Step 5 — Synthesize each block
 
@@ -130,7 +153,7 @@ If the total brief exceeds ~150 lines, tighten blocks (especially WHAT'S NEW and
 
 ## References
 
-- `references/synthesis-prompt.md` — canonical synthesis prompt, also fetched by the n8n daily-email workflow
+- `references/synthesis-prompt.md` — canonical synthesis prompt, also fetched by the daily cloud routine
 - `references/external-block-template.md` — exact format for external blocks
 - `references/internal-block-template.md` — exact format for internal blocks
 - `references/voice-rules.md` — tone constraints (verbatim from v1 spec)

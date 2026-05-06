@@ -1,9 +1,9 @@
 {
   "name": "redstick-brief",
-  "version": "0.2.0",
-  "description": "Redstick Ventures pre-meeting brief generator. /brief reads today's calendar, pulls Gmail thread history + Notion call notes (Otter→Zapier→Notion) + WebSearch with each attendee, and produces a one-page sharp briefing. /setup-daily-brief wires up the daily 6 AM email routine in one command.",
+  "version": "0.3.0",
+  "description": "Redstick Ventures pre-meeting brief generator. /brief reads today's calendar, pulls Gmail thread history + Otter conversation-summary emails + a 4-stage WebSearch+WebFetch research pipeline (anchor / direct page fetch / targeted recency / long-tail anomaly sources like Wayback Machine + GitHub + job postings), and produces a one-page sharp briefing. /setup-daily-brief wires up the daily 6 AM email routine in one command.",
   "author": {
     "name": "Patrick Alpaugh"
   },
-  "keywords": ["venture-capital", "redstick", "calendar", "meeting-brief", "prep", "daily-brief", "otter", "notion"]
+  "keywords": ["venture-capital", "redstick", "calendar", "meeting-brief", "prep", "daily-brief", "otter", "research"]
 }

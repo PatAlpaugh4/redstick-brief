@@ -4,9 +4,9 @@ A pre-meeting brief generator for Cam at Redstick Ventures. One slash command, o
 
 ## What you get
 
-**`/brief`** in Cowork → reads today's Google Calendar, pulls 60 days of Gmail thread history with each attendee, queries Notion's `Meeting Notes` database for prior-call summaries (Otter→Zapier→Notion), runs WebSearch for "what's new" on external attendees, and writes a one-page brief inline. Optional argument: `/brief next`, `/brief tomorrow`, `/brief "Sarah"`.
+**`/brief`** in Cowork → reads today's Google Calendar, pulls 60 days of Gmail thread history with each attendee, searches Gmail for Otter conversation-summary emails (the prior-call source), runs a 4-stage WebSearch+WebFetch research pipeline on external attendees, writes a one-page brief inline. Optional argument: `/brief next`, `/brief tomorrow`, `/brief "Sarah"`.
 
-**`/setup-daily-brief`** in Cowork → one-command, idempotent setup of the daily 6 AM cloud routine. Detects existing routine and updates it, or creates a new one. Use after install + connecting all three MCPs (Gmail, Calendar, Notion).
+**`/setup-daily-brief`** in Cowork → one-command, idempotent setup of the daily 6 AM cloud routine. Detects existing routine and updates it, or creates a new one. Use after install + connecting Gmail and Calendar MCPs.
 
 **Daily email at 6:00 AM weekdays** (via a scheduled cloud routine — see [routines/cam.md](routines/cam.md)) → same logic, delivered to `cam@redstickvc.com` so Cam wakes up to the brief without asking.
 
@@ -77,30 +77,24 @@ Empty days don't get an email. No-attendee focus blocks are skipped. Internal-on
 ## Data sources
 
 - **Google Calendar** — today's events, attendees, locations
-- **Gmail** — last 60 days of threads with each external attendee, last 30 days for internal
-- **Notion** (`Meeting Notes` database, populated by Otter→Zapier) — prior-call summaries, action items, transcripts; last 90 days external / 30 days internal
-- **WebSearch** — recent public activity, company news, team changes, anomalies (last 14 days)
+- **Gmail** — last 60 days of threads with each external attendee (30 days for internal), plus a parallel search for Otter `Conversation summary` emails (last 90 days) which carry the prior-call notes
+- **WebSearch + WebFetch** — 4-stage research pipeline per external attendee:
+  - Stage 1 anchor search (LinkedIn, company site, recent press)
+  - Stage 2 direct page fetch (`/team`, `/about`, `/blog` — current titles, departures, latest post)
+  - Stage 3 targeted recency searches (`site:linkedin.com/in`, TechCrunch / AgFunder / VentureBeat, PR wires, podcasts)
+  - Stage 4 long-tail anomaly sources (Wayback Machine diffs, GitHub commits, Hacker News, Reddit, repeated job postings) — these get priority in WHAT'S NEW
 
-All three MCP connectors (Gmail, Google Calendar, Notion) must be attached: in Cam's Cowork (for `/brief` skill) and on the routine (for the daily email). Connect at https://claude.ai/customize/connectors.
+Two MCP connectors (Gmail + Google Calendar) must be attached at https://claude.ai/customize/connectors. WebSearch and WebFetch are built into Cowork — no separate connector.
 
-## Otter → Notion pipeline (one-time setup)
+## Otter call notes (one-time toggle)
 
-The brief reads call notes from a Notion database. Otter populates it via Zapier:
+The brief reads prior-call context from Otter's auto-emailed conversation summaries:
 
-1. **Notion DB.** Create a database titled `Meeting Notes` with these properties:
-   - `Title` (title)
-   - `Date` (date)
-   - `Attendees` (multi-select preferred)
-   - `Summary` (rich text)
-   - `Action Items` (rich text)
-   - `Transcript` (rich text — optional, link or full text)
-   - `Otter URL` (URL)
+1. In Otter: **Settings → Notifications → toggle ON "Email me conversation summaries"**.
+2. Otter will email Cam after every call he records (subject: `Conversation summary: <meeting title>`).
+3. The brief's existing Gmail search picks these up automatically and matches them to today's meetings by participant name overlap.
 
-2. **Zapier zap.** Trigger: Otter "New Conversation". Action: Notion "Create Database Item" in `Meeting Notes`. Map fields. Run once on a test meeting to verify.
-
-3. **Notion MCP.** Attach at https://claude.ai/customize/connectors and grant access to the database.
-
-After this is wired, every Otter call automatically becomes a row the brief can read.
+That's it. No Notion DB, no Zapier zap, no extra MCP connector. If the toggle is off, the brief works without call context — graceful degradation.
 
 ## Components
 
@@ -135,12 +129,14 @@ Patrick Alpaugh — built for Cam at Redstick Ventures.
 
 ## Version
 
-**0.2.0** — Notion call-notes ingestion (Otter→Zapier→Notion); `/setup-daily-brief` command for idempotent one-command routine setup; "call beats email" source-priority rule.
+**0.3.0** — Simplification cut + multi-stage research. Drops the Notion/Zapier path entirely (replaces with Otter's native email summaries via Gmail search). New 4-stage WebSearch+WebFetch research pipeline (anchor → direct page fetch → targeted recency → long-tail anomaly sources including Wayback Machine, GitHub, HN/Reddit, job postings). Setup for Cam: 5 steps total.
+
+**0.2.0** — Notion call-notes ingestion (Otter→Zapier→Notion); `/setup-daily-brief` command for idempotent one-command routine setup; "call beats email" source-priority rule. *(Superseded by v0.3 simplification — Notion path was too complicated.)*
 
 **0.1.0** — Initial release. Skill (`/brief`) + scheduled cloud routine for the daily 6 AM email. Calendar + Gmail + WebSearch for external "WHAT'S NEW."
 
 ### Roadmap
 
-- **0.3** — Cross-reference scorecards in `Redstick Hub/Deals/<company>/` so ORIENT pulls the snap verdict for portfolio meetings
-- **0.4** — Granola/Fireflies fallback if Cam ever switches note-takers
-- **0.5** — Transcript-only mode for high-stakes meetings (full transcript instead of summary)
+- **0.4** — Cross-reference scorecards in `Redstick Hub/Deals/<company>/` so ORIENT pulls the snap verdict for portfolio meetings
+- **0.5** — Granola/Fireflies fallback if Cam ever switches note-takers
+- **0.6** — Optional Exa or Perplexity API for deeper research on high-stakes meetings (LP intros, anchor investor calls)
