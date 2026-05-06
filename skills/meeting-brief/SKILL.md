@@ -1,6 +1,6 @@
 ---
 name: meeting-brief
-description: Produces a sharp one-page pre-meeting brief for Cam at Redstick Ventures Fund I. Reads today's Google Calendar, fetches 60 days of Gmail thread history with each external attendee and 30 days with internal attendees, classifies meetings as external (≥1 non-@redstickvc.com) or internal, runs WebSearch on each external attendee for "what's new in the last 14 days," then synthesizes per-meeting blocks in the v1 spec format (ORIENT / WHERE YOU LEFT OFF / WHAT'S NEW / FIRST MOVE / THE ANGLE / ONE THING for external; LAST TIME / OPEN BETWEEN YOU / ONE THING for internal). Use when the user says "brief me", "brief me on today", "brief me on my meetings", "what's on my calendar", "prep me for my meetings", "meeting brief", "what do I need to know for today", or any natural variation. Also triggers on `/brief` slash command.
+description: Produces a sharp one-page pre-meeting brief for Cam at Redstick Ventures Fund I. Reads today's Google Calendar, fetches 60 days of Gmail thread history with each external attendee (30 days for internal), queries Notion's `Meeting Notes` database for prior-call summaries from Otter (last 90 days external, 30 days internal), runs WebSearch on each external attendee for "what's new in the last 14 days," classifies meetings as external (≥1 non-@redstickvc.com) or internal, then synthesizes per-meeting blocks in the v1 spec format (ORIENT / WHERE YOU LEFT OFF / WHAT'S NEW / FIRST MOVE / THE ANGLE / ONE THING for external; LAST TIME / OPEN BETWEEN YOU / ONE THING for internal). Use when the user says "brief me", "brief me on today", "brief me on my meetings", "what's on my calendar", "prep me for my meetings", "meeting brief", "what do I need to know for today", or any natural variation. Also triggers on `/brief` slash command.
 ---
 
 # Meeting Brief Skill
@@ -53,19 +53,25 @@ In parallel, for each external event:
 
 1. **Pull Gmail thread history** for the external attendees over the last 60 days. Use `mcp__claude_ai_Gmail__search_threads` with a query like `from:<email> OR to:<email>` plus a date filter. Pull the top 5–10 threads. Use `mcp__claude_ai_Gmail__get_thread` to read the most recent 1–2 messages of each.
 
-2. **Run WebSearch** on each external attendee with a query in the spirit of:
+2. **Query Notion `Meeting Notes` database** via Notion MCP for prior calls with these attendees, last 90 days. Filter by `Attendees` field overlap (any attendee name match) AND `Date` ≥ today − 90 days. Sort by `Date` descending; take the most recent 1–2 entries.
+   - Read the `Summary` and `Action Items` properties of each match.
+   - Skip the full `Transcript` field unless `Summary` is empty.
+   - This is fed by the Otter→Zapier→Notion pipeline Cam has set up — every Otter call ends up as a row in this DB. **If Notion MCP is not attached, skip this step gracefully** (don't error) and note in the brief output that the call-notes source is offline.
+
+3. **Run WebSearch** on each external attendee with a query in the spirit of:
    > Recent activity by [PERSON_NAME], [TITLE] at [COMPANY_NAME]: posts, podcasts, interviews, fundraising, hires, departures, product launches, customer wins, anomalies. Last 14 days.
    
    Capture URLs and dates for citation. If a result has no date or appears stale (>30 days), drop it. Prefer LinkedIn posts, company blog posts, AgFunder / TechCrunch / industry-specific press, and the company's own site.
 
-3. **Look for a deal scorecard** in `Redstick Hub/Deals/<company>/Scorecard.md` (if accessible from the workspace). If one exists, read just the TL;DR snap verdict and EV multiple — surface in the ORIENT block. Do NOT re-run scorecard math.
+4. **Look for a deal scorecard** in `Redstick Hub/Deals/<company>/Scorecard.md` (if accessible from the workspace). If one exists, read just the TL;DR snap verdict and EV multiple — surface in the ORIENT block. Do NOT re-run scorecard math.
 
 ### Step 4b — Internal meeting pipeline
 
 In parallel, for each internal event:
 
 1. **Pull Gmail thread history** for the internal attendees over the last 30 days. Same tool, narrower window.
-2. **Look for recent shared calendar events** (last 30 days) with the same attendees. Note any open commitments (sections promised, references pending, etc.) that surface in those threads.
+2. **Query Notion `Meeting Notes` database** via Notion MCP for prior 1:1s/internal calls with these attendees, last 30 days. Same filter pattern as external, narrower window. Read `Summary` + `Action Items`. Skip if Notion MCP missing.
+3. **Look for recent shared calendar events** (last 30 days) with the same attendees. Note any open commitments (sections promised, references pending, etc.) that surface in those threads.
 
 No web search for internal meetings.
 

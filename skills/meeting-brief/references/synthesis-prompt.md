@@ -28,6 +28,10 @@ A JSON-like bundle:
     { "thread_subject": "...", "last_message_date": "2026-04-29", "last_message_snippet": "..." },
     ...
   ],
+  "priorCallContext": [       // from Notion `Meeting Notes` DB, populated by Otter→Zapier
+    { "date": "2026-04-29", "summary": "...", "action_items": "...", "otter_url": "..." },
+    ...
+  ],
   "researchContext": [        // external only
     { "url": "...", "title": "...", "date": "2026-05-03", "snippet": "..." },
     ...
@@ -40,10 +44,20 @@ A JSON-like bundle:
 
 - Render exactly the block format from `external-block-template.md` or `internal-block-template.md`.
 - **Per-block length: 8–18 lines.** A 4-line block beats a 12-line block of filler.
-- **Cite every claim inline** in this style: `*(per Tuesday email)*`, `*(LinkedIn yesterday)*`, `*(AgFunder 4/29)*`, `*(scorecard 4/30)*`. No claim without a citation. If you cannot cite, cut.
+- **Cite every claim inline** in this style: `*(per Tuesday email)*`, `*(per Tuesday's call)*`, `*(call 4/29)*`, `*(LinkedIn yesterday)*`, `*(AgFunder 4/29)*`, `*(scorecard 4/30)*`. No claim without a citation. If you cannot cite, cut.
 - **If a section has nothing real, delete the section header rather than write "nothing notable."** Empty sections get cut, not padded.
 - **Every external block ends with a literal FIRST MOVE line** — the opening sentence Cam can speak in the meeting. Not advice ("ask about Bowery") — the actual line ("Saw the Bowery pilot — congrats. Walk me through how that came together.").
 - Internal blocks have no FIRST MOVE; they end with ONE THING.
+
+## Source priority — call beats email
+
+When the same fact appears in BOTH a `priorCallContext` summary AND a Gmail thread, **the call wins**:
+
+- Quote what was said on the call, not what was restated in email afterward
+- Citation should read `*(per Tuesday's call)*`, not `*(per Tuesday email)*`
+- Calls are higher signal because people commit verbally to things they later soften or omit in email; the call is the truer source
+
+When only one source has it, cite that one. When the email and call genuinely contradict, surface the contradiction explicitly — that's a high-signal anomaly worth flagging in WHERE YOU LEFT OFF.
 
 ## Voice rules — inviolable
 
@@ -68,9 +82,11 @@ A JSON-like bundle:
 ## Special handling
 
 - **Scorecard context exists**: surface the snap verdict + confidence in ORIENT (one phrase, e.g., "Scorecard verdict: WORTH A MEETING, low confidence *(scorecard 4/30)*"). Do not re-litigate the math.
-- **No Gmail history**: ORIENT relies on research context only; WHERE YOU LEFT OFF gets cut entirely (it's a first-touch meeting).
+- **Prior-call context exists**: WHERE YOU LEFT OFF (external) and LAST TIME (internal) lead with what was said on the most recent call, not the email thread. Quote specific commitments verbatim from the call summary when possible. If action items from the prior call are still open, surface them.
+- **No Gmail history AND no prior call**: ORIENT relies on research context only; WHERE YOU LEFT OFF gets cut entirely (it's a first-touch meeting).
 - **No research signal**: WHAT'S NEW gets cut. Do not pad.
-- **Internal meeting with no recent threads**: LAST TIME and OPEN BETWEEN YOU collapse to a one-line block — "no recent threads since [date]; usual cadence." That's still useful.
+- **Internal meeting with no recent threads or calls**: LAST TIME and OPEN BETWEEN YOU collapse to a one-line block — "no recent threads since [date]; usual cadence." That's still useful.
+- **Notion MCP offline / priorCallContext missing entirely**: behave as v0.1 did — Gmail + WebSearch only. Don't mention "call notes unavailable" in the brief itself; that's noise. The skill or routine wrapper handles the offline notice separately.
 
 ## What NOT to do
 

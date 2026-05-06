@@ -12,10 +12,10 @@ A fictional but realistic Wednesday with 3 external meetings + 1 internal. This 
 Founder follow-up · second touch since Tuesday's intro
 
 ORIENT
-Solo founder, ex-Plenty engineering lead. CV stack for indoor vertical farms. Raising $2M on $12M post *(per Tuesday email)*. Scorecard verdict: WORTH A MEETING, low confidence *(scorecard 4/30)*.
+Solo founder, ex-Plenty engineering lead. CV stack for indoor vertical farms. Raising $2M on $12M post *(per Tuesday's call)*. Scorecard verdict: WORTH A MEETING, low confidence *(scorecard 4/30)*.
 
 WHERE YOU LEFT OFF
-Tuesday call ended on unit economics — she dodged CAC and gross margin per pound. Promised to send a model "this week" *(per Tuesday email)*. Hasn't.
+On Tuesday's call she dodged CAC and gross margin per pound — said the unit econ model "is being cleaned up, end of week" *(per Tuesday's call)*. Followed up with an email Wednesday saying she'd "send a model this week" *(per Wed email)*. Today is Friday, no model.
 
 WHAT'S NEW (last 14 days)
 - Pilot with Bowery announced on her LinkedIn 2 days ago — no press, but Bowery's CTO commented publicly *(LinkedIn 4/27)*. Real.
@@ -60,10 +60,10 @@ He answered Marcus's intro email in 11 minutes on a Saturday. He wants this meet
 2:00 PM · 1:1 with Marcus
 
 LAST TIME
-You agreed he'd own Acme reference checks; you'd push back on Greenhouse's valuation. He sent the references Thursday *(per Thursday email)*; you haven't read them yet.
+On last Friday's 1:1 *(per call 4/22)* you agreed he'd own Acme reference checks; you'd push back on Greenhouse's valuation. Action items from that call still open: Marcus's references on Acme (sent Thursday, you owe a read), your Greenhouse section for Q3 LP letter (still owed).
 
 OPEN BETWEEN YOU
-- Acme references — he sent, you owe a read before Friday
+- Acme references — he sent, you owe a read before Friday *(per Thursday email)*
 - Q3 LP letter draft — you owe him the Greenhouse section
 - His Friday flight — confirm you're covering the Carter call
 
@@ -103,5 +103,6 @@ Her panel framing aligns with how you actually run Fund I (real businesses, not 
 - **Citations**: every factual claim has one. None are invented.
 - **FIRST MOVE quality**: each is specific to the meeting, references something recent and citeable, gives Cam a way to start without fishing.
 - **Anomalies surfaced**: engineer title flip, Saturday-11-min reply, AgFunder positioning gap, Jen suggesting the slot herself.
+- **Call beats email**: in Greenhouse's WHERE YOU LEFT OFF, the call cite (`*(per Tuesday's call)*`) anchors the verbal commitment about unit econ; the email cite (`*(per Wed email)*`) anchors the follow-up promise. Reader can see exactly what was said vs. what was written. In Marcus's LAST TIME, action items are tied to the prior call (`*(per call 4/22)*`) so the recap reads from the truer source.
 - **Internal block (Marcus)** is lighter than external; no FIRST MOVE; no WHAT'S NEW.
 - **No diligence jargon**: nowhere does "MOIC" or "EV" or "Stage 2" appear. The scorecard reference in Greenhouse's ORIENT uses the snap verdict in plain English, not the math.

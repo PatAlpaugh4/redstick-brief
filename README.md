@@ -4,7 +4,9 @@ A pre-meeting brief generator for Cam at Redstick Ventures. One slash command, o
 
 ## What you get
 
-**`/brief`** in Cowork → reads today's Google Calendar, pulls 60 days of Gmail thread history with each external attendee (30 days for internal), runs a quick web search for "what's new" on external attendees, and writes a one-page brief inline. Optional argument: `/brief next`, `/brief tomorrow`, `/brief "Sarah"`.
+**`/brief`** in Cowork → reads today's Google Calendar, pulls 60 days of Gmail thread history with each attendee, queries Notion's `Meeting Notes` database for prior-call summaries (Otter→Zapier→Notion), runs WebSearch for "what's new" on external attendees, and writes a one-page brief inline. Optional argument: `/brief next`, `/brief tomorrow`, `/brief "Sarah"`.
+
+**`/setup-daily-brief`** in Cowork → one-command, idempotent setup of the daily 6 AM cloud routine. Detects existing routine and updates it, or creates a new one. Use after install + connecting all three MCPs (Gmail, Calendar, Notion).
 
 **Daily email at 6:00 AM weekdays** (via a scheduled cloud routine — see [routines/cam.md](routines/cam.md)) → same logic, delivered to `cam@redstickvc.com` so Cam wakes up to the brief without asking.
 
@@ -63,6 +65,9 @@ Empty days don't get an email. No-attendee focus blocks are skipped. Internal-on
 - `/brief "Sarah Chen"` — single named attendee
 - Natural-language phrases: "brief me on today", "prep me for my meetings", "what's on my calendar"
 
+**Setup the daily email (one-time):**
+- `/setup-daily-brief` — creates or updates the 6 AM cloud routine on Cam's account. Idempotent.
+
 **Daily (cloud routine):**
 - Email arrives at 6:00 AM Mon–Fri in Cam's local TZ.
 - Subject: `Tuesday, May 5 — 4 meetings`.
@@ -73,9 +78,29 @@ Empty days don't get an email. No-attendee focus blocks are skipped. Internal-on
 
 - **Google Calendar** — today's events, attendees, locations
 - **Gmail** — last 60 days of threads with each external attendee, last 30 days for internal
+- **Notion** (`Meeting Notes` database, populated by Otter→Zapier) — prior-call summaries, action items, transcripts; last 90 days external / 30 days internal
 - **WebSearch** — recent public activity, company news, team changes, anomalies (last 14 days)
 
-Both Google connectors must be attached: in Cam's Cowork (for `/brief` skill) and on the routine itself at https://claude.ai/code/routines (for the daily email). Connect at https://claude.ai/customize/connectors.
+All three MCP connectors (Gmail, Google Calendar, Notion) must be attached: in Cam's Cowork (for `/brief` skill) and on the routine (for the daily email). Connect at https://claude.ai/customize/connectors.
+
+## Otter → Notion pipeline (one-time setup)
+
+The brief reads call notes from a Notion database. Otter populates it via Zapier:
+
+1. **Notion DB.** Create a database titled `Meeting Notes` with these properties:
+   - `Title` (title)
+   - `Date` (date)
+   - `Attendees` (multi-select preferred)
+   - `Summary` (rich text)
+   - `Action Items` (rich text)
+   - `Transcript` (rich text — optional, link or full text)
+   - `Otter URL` (URL)
+
+2. **Zapier zap.** Trigger: Otter "New Conversation". Action: Notion "Create Database Item" in `Meeting Notes`. Map fields. Run once on a test meeting to verify.
+
+3. **Notion MCP.** Attach at https://claude.ai/customize/connectors and grant access to the database.
+
+After this is wired, every Otter call automatically becomes a row the brief can read.
 
 ## Components
 
@@ -83,7 +108,8 @@ Both Google connectors must be attached: in Cam's Cowork (for `/brief` skill) an
 .claude-plugin/
   plugin.json
 commands/
-  brief.md           ← /brief slash command
+  brief.md                    ← /brief slash command
+  setup-daily-brief.md        ← /setup-daily-brief one-time routine setup
 skills/
   meeting-brief/
     SKILL.md
@@ -93,14 +119,15 @@ skills/
       internal-block-template.md
       voice-rules.md
       example-output.md
-routines/             ← scheduled cloud routine prompts (NOT shipped in the .plugin)
-  cam.md              ← production prompt + setup config
+routines/                      ← scheduled cloud routine prompts (NOT shipped in the .plugin)
+  cam.md                      ← production prompt + setup config
   README.md
 ```
 
 ## Trigger phrases
 
-`/brief`, "brief me", "brief me on today", "prep me for my meetings", "what's on my calendar", "meeting brief", "what do I need to know for today"
+- `/brief`, "brief me", "brief me on today", "prep me for my meetings", "what's on my calendar", "meeting brief", "what do I need to know for today"
+- `/setup-daily-brief`, "set up the daily brief", "wire up the morning email", "schedule the brief routine"
 
 ## Author
 
@@ -108,10 +135,12 @@ Patrick Alpaugh — built for Cam at Redstick Ventures.
 
 ## Version
 
+**0.2.0** — Notion call-notes ingestion (Otter→Zapier→Notion); `/setup-daily-brief` command for idempotent one-command routine setup; "call beats email" source-priority rule.
+
 **0.1.0** — Initial release. Skill (`/brief`) + scheduled cloud routine for the daily 6 AM email. Calendar + Gmail + WebSearch for external "WHAT'S NEW."
 
 ### Roadmap
 
-- **0.2** — Cross-reference scorecards in `Redstick Hub/Deals/<company>/` so ORIENT pulls the snap verdict for portfolio meetings
-- **0.3** — Notion deal-notes ingestion for richer "WHERE YOU LEFT OFF"
-- **0.4** — Fireflies/Granola transcript pipeline (so prior calls feed the brief, not just emails)
+- **0.3** — Cross-reference scorecards in `Redstick Hub/Deals/<company>/` so ORIENT pulls the snap verdict for portfolio meetings
+- **0.4** — Granola/Fireflies fallback if Cam ever switches note-takers
+- **0.5** — Transcript-only mode for high-stakes meetings (full transcript instead of summary)

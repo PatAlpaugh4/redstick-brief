@@ -17,6 +17,7 @@ The plugin pairs with a **scheduled cloud routine** (config at `routines/cam.md`
 | `skills/meeting-brief/references/voice-rules.md` | Update tone constraints |
 | `skills/meeting-brief/references/example-output.md` | Update the worked example |
 | `commands/brief.md` | Change what `/brief` does |
+| `commands/setup-daily-brief.md` | Change how `/setup-daily-brief` discovers/creates/updates the routine, pre-flight checks, defaults |
 | `routines/cam.md` | Update the daily-email routine config (cron, model, recipient, MCP connectors) — most voice/format edits should NOT touch this file |
 | `.claude-plugin/plugin.json` | Bump the version (do this every release) |
 
